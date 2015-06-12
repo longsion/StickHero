@@ -146,11 +146,7 @@ function GamePlayScene:createLayer()
         if nil ~= schedulerId then 
             scheduler:unscheduleScriptEntry(schedulerId)
         end
-        -- 旋转动画
-        stick_size = stick:getContentSize()
-        local ac1 = stick:runAction(cc.RotateBy:create(1, 90))
-        local ac2 = cc.CallFunc:create(function() self:setHeroWalk(stick_size.height, true) end)
-        stick:runAction(cc.Sequence:create(ac1, ac2))
+        self:crossStick()
     end
     local listener = cc.EventListenerTouchOneByOne:create()
     listener:setSwallowTouches(true)
@@ -164,6 +160,20 @@ function GamePlayScene:createLayer()
     return layer
 end 
 
+function GamePlayScene:crossStick()
+    -- 判断是否在下一个平台上
+    -- 在 走到棍子末+英雄长，高度-5，然后走到平台边
+    
+    -- 否 判断棍子与平台间是否小于英雄长
+    -- 小 直接掉下去 向后翻
+    -- 大 走到棍子末+英雄长再掉下去 向前翻 
+    -- 旋转动画
+    stick_size = stick:getContentSize()
+    local ac1 = stick:runAction(cc.RotateBy:create(1, 90))
+    local ac2 = cc.CallFunc:create(function() self:setHeroWalk(stick_size.height, true) end)
+    stick:runAction(cc.Sequence:create(ac1, ac2))	
+end
+
 -- 平台进入
 function GamePlayScene:platformEnter()
     local next_index = self:getNextPlatform()
@@ -173,8 +183,8 @@ function GamePlayScene:platformEnter()
 	-- 生成宽度和距离
     max_stick_len = size.width - platform[platform.cur].stick:getContentSize().width
 	local platform_width = math.random(25, 220)
-    local platform_distance = math.random(25, size.width-
-        platform[platform.cur].stick:getContentSize().width - platform_width - 10)
+    local platform_distance = math.random(init_stick_size.width/2, size.width-
+        platform[platform.cur].stick:getContentSize().width - platform_width-10)
     cclog("platform_width, distance %d, %d", platform_width, platform_distance)
     platform[next_index].stick:setContentSize(platform_width, init_stick_size.height)
 	-- 进入动画
